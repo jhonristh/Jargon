@@ -123,9 +123,17 @@ def build_seminars(wb):
         if d.get("Topics"):
             tags = "".join(f"<span>{esc(t)}</span>" for t in str(d["Topics"]).split(",") if t.strip())
             body += f'<div class="tags">{tags}</div>'
-        cert = local_file("certificates", d.get("Certificate file (optional)"))
-        if cert:
-            body += f'<p><a class="inline" href="{cert}">Related certificate ↗</a></p>'
+        certificate_name = d.get("Certificate file (optional)")
+        preview = None
+        if certificate_name:
+            preview_name = Path(str(certificate_name)).with_suffix(".webp").name
+            preview = local_file("certificate-previews", preview_name)
+        if preview:
+            body += (
+                f'<img class="thumb" loading="lazy" src="{preview}" '
+                f'alt="Public preview for {esc(d["Title"])}">'
+                '<p><small>Public preview. Original document is not published.</small></p>'
+            )
         items.append(row(d.get("Date") or "", esc(d["Title"]), body))
     print(f"  Seminars published: {len(items)}")
     return "".join(items) or empty(
